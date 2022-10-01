@@ -426,6 +426,13 @@ module Shoulda
           self
         end
 
+        def is_in(range)
+          prepare_submatcher(
+            NumericalityMatchers::RangeMatcher.new(self, @attribute, range),
+          )
+          self
+        end
+
         def with_message(message)
           @expects_custom_validation_message = true
           @expected_message = message
@@ -456,6 +463,10 @@ module Shoulda
 
           description << "validate that :#{@attribute} looks like "
           description << Shoulda::Matchers::Util.a_or_an(full_allowed_type)
+
+          if range_description.present?
+            description << " #{range_description}"
+          end
 
           if comparison_descriptions.present?
             description << " #{comparison_descriptions}"
@@ -671,6 +682,14 @@ module Shoulda
             end
             arr
           end
+        end
+
+        def range_description
+          range_submatcher = @submatchers.detect do |submatcher|
+            submatcher.respond_to? :range_description
+          end
+
+          range_submatcher&.range_description
         end
 
         def model
